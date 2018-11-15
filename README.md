@@ -1,5 +1,5 @@
 
-# Tmall_SSH
+# Tmall_SSM
 
 技术栈 Spring MVC+ Mybatis + Spring + Jsp + Tomcat , 是 Java Web 入门非常好的练手项目  
 ##### 效果展示：  
