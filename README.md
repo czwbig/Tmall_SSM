@@ -641,4 +641,4 @@ public List<Category> list() {
 
 
 ### 参考
-**[天猫SSM整站学习教程](http://how2j.cn/k/tmall_ssm/tmall_ssm-1546/1546.html?p=55563)** 里面除了本项目，还有 Java 基础，前端，Tomcat 及其他中间件等教程， 可以注册一个账户，能保存学习记录。
+**[天猫SSM整站学习教程](http://how2j.cn/k/tmall_ssm/tmall_ssm-1399/1399.html?p=55563)** 里面除了本项目，还有 Java 基础，前端，Tomcat 及其他中间件等教程， 可以注册一个账户，能保存学习记录。
