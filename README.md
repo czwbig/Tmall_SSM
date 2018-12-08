@@ -27,7 +27,7 @@ J2EE：`Tomcat`, `Servlet`, `JSP`, `Filter`
 ![项目结构](https://upload-images.jianshu.io/upload_images/14923529-19c2f8b095450fd0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 
-### 表结构
+## 表结构
 
 [建表sql](https://github.com/czwbig/Tmall_SSM/blob/master/sql/tmall_ssm.sql)  已经放在 Github 项目的 /sql 文件夹下
 
@@ -63,36 +63,37 @@ J2EE：`Tomcat`, `Servlet`, `JSP`, `Filter`
 
 ----
 
-### 开发流程
+## 开发流程
 
 首先使用经典的 SSM 模式进行由浅入深地开发出第一个分类管理模块 ，
 然后分析这种方式的弊端，再对其进行项目重构，使得框架更加紧凑，后续开发更加便利和高效率。 
 
-### 分类管理
+## 分类管理模块
 
-###### Category 实体类
+### Category 实体类
 
-准备 Category 实体类，并用 Hibernate 注解标示其对应的表，字段等信息。
+准备 Category 实体类，定义对应的字段即可。
 举个例子，对于 `分类 / category` 的 实体类 和 表结构 设计如下：
 
 ![](https://upload-images.jianshu.io/upload_images/14923529-859590e49c301251.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 ---
 
-###### Mapper 接口
+### Mapper 接口
 
-`public interface CategoryMapper {
+```java
+public interface CategoryMapper {
     List<Category> list();
 } 
- `
+ ```
 
 ---
 
-###### CategoryMapper.xml
+### CategoryMapper.xml 指定映射的 sql 和结果集
 
-com.how2java.tmall.mapper.CategoryMapper 对应上面的 Mapper 接口。mybatis 的 sql 是手打的，还好有逆向工程，后面重构会讲。
+com.caozhihu.tmall.mapper.CategoryMapper 对应上面的 Mapper 接口。mybatis 的 sql 是手打的，还好有逆向工程，后面重构会讲。
 
-```
+```xml
 <mapper namespace="com.caozhihu.tmall.mapper.CategoryMapper">
   <select id="list" resultType="Category">
     select * from   category order by id desc
@@ -105,17 +106,17 @@ com.how2java.tmall.mapper.CategoryMapper 对应上面的 Mapper 接口。mybatis
 ###### CategoryService  接口
 
 
-`
+```java
 public interface CategoryService{
     List<Category> list();
 }
-`
+```
 
 ---
 
 ###### CategoryServiceImpl 实现类
 
-```
+```java
 @Service
 public class CategoryServiceImpl  implements CategoryService {
     @Autowired
@@ -126,18 +127,19 @@ public class CategoryServiceImpl  implements CategoryService {
 }
 ```
 
-在 list() 方法中，通过其自动装配的一个 CategoryMapper 对象的 list() 获取所有的分类对象。
+在 list() 方法中，通过其自动装配的一个 CategoryMapper 对象的 list() 方法来获取所有的分类对象。
 
 ---
 
-###### CategoryController 类
+### CategoryController 控制类
 
-```
+```java
 @Controller //声明当前类是一个控制器
 @RequestMapping("") //访问的时候无需额外的地址
 public class CategoryController {
     @Autowired //自动装配进 categoryService 接口
     CategoryService categoryService;
+    
     @RequestMapping("admin_category_list")
     public String list(Model model){
         List<Category> cs= categoryService.list();
@@ -151,8 +153,9 @@ public class CategoryController {
 
 ---
 
-###### jdbc.properties
-```
+### jdbc.properties 数据库配置文件
+
+```ini
 #数据库配置文件
 jdbc.driver=com.mysql.cj.jdbc.Driver
 jdbc.url=jdbc:mysql://localhost:3306/tmall_ssm?useUnicode=true&characterEncoding=utf8
@@ -162,9 +165,11 @@ jdbc.password=admin
 
 ---
 
-###### applicationContext.xml
+### applicationContext.xml 
 
-```
+这里配置使用了阿里巴巴的 druid 数据库连接池，这些配置基本都是固定写法，PSCache 就是 PreparedStatement 缓存，据说可以大幅提升性能。
+
+```xml
 <beans>
     <!-- 启动对注解的识别 -->
     <context:annotation-config/>
@@ -200,7 +205,7 @@ jdbc.password=admin
 
     <!--Mybatis的SessionFactory配置-->
     <bean id="sqlSession" class="org.mybatis.spring.SqlSessionFactoryBean">
-        <property name="typeAliasesPackage" value="com.how2java.tmall.pojo"/>
+        <property name="typeAliasesPackage" value="com.caozhihu.tmall.pojo"/>
         <property name="dataSource" ref="dataSource"/>
         <property name="mapperLocations">
             <array>
@@ -221,19 +226,21 @@ jdbc.password=admin
         </property>
     </bean>
 
-    <!--Mybatis的Mapper文件识别,mybatis-spring提供了MapperScannerConfigurer这个类，
+    <!--Mybatis的Mapper文件识别，mybatis-spring提供了MapperScannerConfigurer这个类，
     它将会查找类路径下的映射器并自动将它们创建成MapperFactoryBean-->
     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
         <property name="basePackage" value="com.caozhihu.tmall.mapper"/>
     </bean>
 </beans>
 ```
+
 这里只放了核心配置部分，头部命名空间已省略
 
 ---
 
 ###### springMVC.xml
- ```
+
+ ```xml
 <beans>
     <!--启动注解识别-->
     <context:annotation-config/>
@@ -262,15 +269,15 @@ jdbc.password=admin
 
 ---
 
-###### web.xml
+### web.xml
 
-修改web.xml，主要提供如下功能
+ web.xml 主要提供如下功能
 
-1. 指定spring的配置文件为classpath下的applicationContext.xml
+1. 指定 spring 的配置文件为 classpath 下的 applicationContext.xml
 2. 设置中文过滤器
-3. 指定spring mvc配置文件为classpath下的springMVC.xml
+3. 指定 spring mvc 配置文件为 classpath 下的 springMVC.xml
 
-```
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns="http://java.sun.com/xml/ns/javaee"
@@ -320,7 +327,7 @@ jdbc.password=admin
 
 ---
 
-###### 访问 jsp 显示数据
+### 访问 jsp 显示数据
 
 Controller 中的 Model 携带数据跳转到 jsp ，作为视图，担当的角色是显示数据，借助 JSTL 的 c:forEach 标签遍历从 CategoryController.list() 传递过来的集合。
 
@@ -330,10 +337,11 @@ Controller 中的 Model 携带数据跳转到 jsp ，作为视图，担当的角
 
 管理分类剩下部分就不展开了  
 完整的`CategoryMapper.xml`代码如下
-```
+
+```xml
 <mapper namespace="com.how2java.tmall.mapper.CategoryMapper">
     <select id="list" resultType="Category">
-        select * from   category         order by id desc
+        select * from category order by id desc
         <if test="start!=null and count!=null">
             limit #{start},#{count}
         </if>
@@ -364,7 +372,8 @@ Controller 中的 Model 携带数据跳转到 jsp ，作为视图，担当的角
 ---
 
 完整的`CategoryMapper`接口代码如下
-```
+
+```java
 public interface CategoryMapper {
      List<Category> list(Page page);
      int total();
@@ -378,7 +387,8 @@ public interface CategoryMapper {
 ---
 
 完整的`CategoryService`接口代码如下
-```
+
+```java
 public interface CategoryService{
     int total();
     List<Category> list(Page page);
@@ -391,41 +401,46 @@ public interface CategoryService{
 
 ---
 
-完整的`CategoryServiceImpl`实现类代码就不放着了，只是实现了每个方法，并在其中调用对应的 CategoryMapper 方法而已  
-如： ` public List<Category> list(Page page) { return categoryMapper.list(page); }`
+完整的`CategoryServiceImpl`实现类代码就不放着了，只是实现了每个方法，并在其中调用对应的 CategoryMapper 方法而已，如下：
 
-###### 思路流程图
+```java
+public List<Category> list(Page page) { return categoryMapper.list(page); }
+```
+
+### 思路流程图
 
 ![思路流程图](https://upload-images.jianshu.io/upload_images/14923529-1271966830811f35.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
-### 项目重构
+## 项目重构
 
-分类管理中的CategoryMapper.xml使用很直接的SQL语句开发出来，这样的好处是简单易懂，便于理解。
-可是，随着本项目功能的展开和复杂度的提升，使用这种直接的SQL语句方式的开发效率较低，需要自己手动写每一个SQL语句，而且其维护起来也比较麻烦。
+分类管理中的 CategoryMapper.xml 使用很直接的 SQL 语句开发出来，这样的好处是简单易懂，便于理解。可是，随着本项目功能的展开和复杂度的提升，使用这种直接的SQL语句方式的开发效率较低，需要自己手动写每一个SQL语句，而且其维护起来也比较麻烦。  
 所以我们做进一步的改进，主要是在分页方式和逆向工程方面做了重构。
 1. 分页方式
-目前的分页方式是自己写分页对应的limit SQL语句，并且提供一个获取总数的count(*) SQL。 不仅如此, mapper, service, service.impl 里都要提供两个方法：
+目前的分页方式是自己写分页对应的 limit SQL 语句，并且提供一个获取总数的 count(*) SQL。 不仅如此, mapper, service, service.impl 里都要提供两个方法：
 `list(Page page);`
-`count();`
+`count();`  
 分类是这么做的，后续其他所有的实体类要做分页管理的时候都要这么做，所以为了提高开发效率，把目前的分页方式改为使用 pageHelper 分页插件来实现。  
 
 2. 逆向工程
 目前分类管理中 Mybatis 中相关类都是自己手动编写的，包括：Category.java, CategoryMapper.java和CategoryMapper.xml。  
-尤其是CategoryMapper.xml里面主要是SQL语句，可以预见在接下来的开发任务中，随着业务逻辑的越来越复杂，SQL语句也会越来越复杂，进而导致开发速度降低，出错率增加，维护成本上升等问题。
-为了解决手动编写SQL语句效率低这个问题，我们对 Mybatis 部分的代码，使用逆向工程进行重构。 
-所谓的逆向工程，就是在已经存在的数据库表结构基础上，通过工具，自动生成Category.java, CategoryMapper.java和CategoryMapper.xml，想想就很美好是吧。
+尤其是 CategoryMapper.xml 里面主要是SQL语句，可以预见在接下来的开发任务中，随着业务逻辑的越来越复杂，SQL 语句也会越来越复杂，进而导致开发速度降低，出错率增加，维护成本上升等问题。
+为了解决手动编写 SQL 语句效率低这个问题，我们对 Mybatis 部分的代码，使用逆向工程进行重构。 
+所谓的逆向工程，就是在已经存在的数据库表结构基础上，通过工具，自动生成 Category.java, CategoryMapper.java 和 CategoryMapper.xml，想想就很美好是吧。
 
 ---
 
-##### pageHelper 分页
+### pageHelper 分页
+因为使用插件可以获取总数信息和实现分页查询了，所以关于分页操作的部分配置和代码要做修改。  
 
-**`CategoryMapper.xml`**
-1. 去掉total SQL语句
-2. 修改list SQL语句，去掉其中的limit
-```
+#### 修改 CategoryMapper.xml
+
+1. 去掉 total SQL 语句
+2. 修改 list SQL 语句，去掉其中的 limit
+
+```xml
 <mapper namespace="com.how2java.tmall.mapper.CategoryMapper">
     <select id="list" resultType="Category">
-        select * from   category         order by id desc
+        select * from category order by id desc
     </select>
  
     <insert id="add"  keyProperty="id"  useGeneratedKeys="true" parameterType="Category" >
@@ -448,15 +463,17 @@ public interface CategoryService{
 
 ---
 
-**`CategoryMapper 接口` /`CategoryService 接口` / `CategoryServiceImpl 类`** 都是  
-1. 去掉total()方法
-2. 去掉list(Page page)方法
-3. 新增list() 方法
+#### 使用 PageHelper 提供的方法进行分页查询
+对 **`CategoryMapper 接口` /`CategoryService 接口` / `CategoryServiceImpl 类`** 进行如下操作：
+1. 去掉 total() 方法
+2. 去掉 list(Page page) 方法
+3. 新增 list() 方法
 
 ---
 
-**`CategoryController.list()方法 `**
-```
+使用分页插件后的 **`CategoryController.list()方法 `**
+
+```java
 @Controller
 @RequestMapping("")
 public class CategoryController {
@@ -477,11 +494,15 @@ public class CategoryController {
 ```
 ---
 
-**`applicationContext.xml 配置 pagehelper 插件`**
-之前放的已经是修改过的了。。  
-就是在`<!--Mybatis的SessionFactory配置-->
-    <bean id="sqlSession" class="org.mybatis.spring.SqlSessionFactoryBean">`里面加入
+#### 在 applicationContext.xml 配置 pagehelper 插件
+其实在上面显示的已经是配置过插件了，这里再提一下，就是在 SqlSessionFactoryBean 命名空间内设置一个 plugins 的属性。  
+
+```xml
+<!--Mybatis的SessionFactory配置-->
+    <bean id="sqlSession" class="org.mybatis.spring.SqlSessionFactoryBean">
 ```
+
+```xml
 <property name="plugins">
             <array>
                 <bean class="com.github.pagehelper.PageInterceptor">
@@ -495,11 +516,15 @@ public class CategoryController {
 ```
 ---
 
-##### Mybatis 逆向工程
-1. OverIsMergeablePlugin  
+### Mybatis 逆向工程
+
 MybatisGenerator 插件是 Mybatis 官方提供的，这个插件存在一个问题 ，即当第一次生成了CategoryMapper.xml 之后，再次运行会导致 CategoryMapper.xml 生成重复内容，而影响正常的运行。
-为了解决这个问题，需要自己写一个小插件类 OverIsMergeablePlugin 。  这是复制别人的，具体原理还没研究。
-```
+为了解决这个问题，需要自己写一个小插件类 OverIsMergeablePlugin 。 
+
+#### OverIsMergeablePlugin  
+ 这是复制别人的，具体原理还没研究。
+
+```java
 public class OverIsMergeablePlugin extends PluginAdapter {
     @Override
     public boolean validate(List<String> warnings) {
@@ -519,10 +544,11 @@ public class OverIsMergeablePlugin extends PluginAdapter {
 }
 ```
 
-2. generatorConfig.xml
-这里提供一部分代码，具体的在 [github-generatorConfig.xml]( )
+#### generatorConfig.xml 指定生成策略
 
-```
+这里提供一部分代码，具体的在 github 
+
+```xml
 <generatorConfiguration>
     <context id="DB2Tables" targetRuntime="MyBatis3">
         <!--避免生成重复代码的插件-->
@@ -563,9 +589,11 @@ public class OverIsMergeablePlugin extends PluginAdapter {
             <generatedKey column="id" sqlStatement="JDBC"/>
         </table>
 ```
-3. MybatisGenerator  
-运行即生成mapper,pojo,xml 文件，核心代码如下  
-```
+
+#### MybatisGenerator 生成执行类 
+运行即生成 mapper,pojo,xml 文件，核心代码如下  
+
+```java
 List<String> warnnings = new ArrayList<>();
         boolean overwrite = true;
         InputStream is = MybatisGenerator.class.getClassLoader().getResource("generatorConfig.xml").openStream();//获取配置文件对应路径的输入流
@@ -577,45 +605,49 @@ List<String> warnnings = new ArrayList<>();
         MyBatisGenerator myBatisGenerator = new MyBatisGenerator(configuration, callback, warnnings);
         myBatisGenerator.generate(null);
 ```
+
 ---
 
-**自动生成的 CategoryMapper.xml 如下，**
+#### 自动生成的 CategoryMapper.xml 
 
 ![](https://upload-images.jianshu.io/upload_images/14923529-5182704f28925e59.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
-这是插件自动生成的xml，与我们自己手动写的也差不了多少，主要区别在于提供了一个 id="Example_Where_Clause"的SQL，借助这个可以进行多条件查询。
+这是插件自动生成的 xml，与我们自己手动写的也差不了多少，主要区别在于提供了一个 id="Example_Where_Clause" 的 SQL，借助这个可以进行多条件查询。
 
 ---
 
-**pojo 如下，**
+#### 自动生成的 pojo 类
 
 ![](https://upload-images.jianshu.io/upload_images/14923529-74643bd40d2402fc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
-MybatisGenerator会生成一个类叫做XXXXExample的。 它的作用是进行排序，条件查询的时候使用。
+MybatisGenerator 会生成一个类叫做 XXXXExample 的。 它的作用是进行排序，条件查询的时候使用。
 在分类管理里用到了排序，但是没有使用到其条件查询，在后续的属性管理里就会看到其条件查询的用法了。
 
 ---
 
-**mapper 接口**  
+#### 自动生成的 mapper 接口
 ![image.png](https://upload-images.jianshu.io/upload_images/14923529-2fdec1b6c547303d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
-与手动编写的CategoryMapper比起来，CategoryMapper也是提供CURD一套，不过方法名发生了变化，比如：  
-`delete`叫做`deleteByPrimaryKey`, `update`叫做`updateByPrimaryKey`。
-除此之外，修改还提供了一个`updateByPrimaryKeySelective` ，其作用是只修改变化了的字段，未变化的字段就不修改了。
+与手动编写的 CategoryMapper 对比，CategoryMapper 也是提供 CURD 一套，不过方法名发生了变化，比如：  
+delete() 叫做 deleteByPrimaryKey(),  
+update 叫做 updateByPrimaryKey(),  
+除此之外，还提供了一个 `updateByPrimaryKeySelective()` 方法，其作用是只更新，即只修改新插入的不为 null 的字段。（比如当前数据是 {name,age} ，插入新数据是 {newName,null}，如果使用此方法，则插入之后数据变为 {newName,age} 而不是 {newName,null}）
 
-还有个改动是查询 list ,变成了`selectByExample(CategoryExample example);`
+还有个改动是 list() 方法 ,变成了`selectByExample(CategoryExample example);`
 
-**CategoryServiceImpl 实现类**  
+#### 修改 CategoryServiceImpl 实现类
 因为 CategoryMapper 的方法名发生了变化，所以 CategoryServiceImpl 要做相应的调整。
 值得一提的是list方法：
-```
+
+```java
 public List<Category> list() {
         CategoryExample example =new CategoryExample();
         example.setOrderByClause("id desc");
         return categoryMapper.selectByExample(example);
     }
 ```
-按照这种写法，传递一个example对象，这个对象指定按照id倒排序来查询  
+
+按照这种写法，传递一个 example 对象，这个对象指定按照 id 倒排序来查询  
 我查看了 xml 里的映射， 在对应的查询语句 selectByExample 里面，
 会判断 orderByClause 是否为空，如果不为空就追加 `order by ${orderByClause}`  
 这样如果设置了 orderByClause 的值为“id desc” ，执行的 sql 则会是 `order by id desc`   
@@ -630,7 +662,7 @@ public List<Category> list() {
 后台还有其他管理页面的，比如属性管理、产品管理等，由于篇幅原因，具体的请移步[github-Tmall_SSM项目](https://github.com/czwbig/Tmall_SSM)。
 
 
-#####   前台页面展示
+##   前台页面展示
 
 此处是 SSH 跑起来截的图，SSM 版本目前只做了后台，前台未做，敬请期待...
 ![前台首页](https://upload-images.jianshu.io/upload_images/14923529-6be73ccdb1dec779.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
@@ -640,5 +672,6 @@ public List<Category> list() {
 本文所讲不足整个项目的 1/10 ，有兴趣的朋友请移步 [github 项目的地址](https://github.com/czwbig/Tmall_SSM) 。
 
 
-### 参考
+## 参考
 **[天猫SSM整站学习教程](http://how2j.cn/k/tmall_ssm/tmall_ssm-1399/1399.html?p=55563)** 里面除了本项目，还有 Java 基础，前端，Tomcat 及其他中间件等教程， 可以注册一个账户，能保存学习记录。
+
