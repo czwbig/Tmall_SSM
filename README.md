@@ -3,8 +3,8 @@
 
 技术栈 Spring MVC+ Mybatis + Spring + Jsp + Tomcat , 注意，此版本只有后台管理，已放弃继续完成前台页面，前台代码请参考JavaEE 或 SSH 版本。  
 ##### 效果展示：  
-[模仿天猫前台](http://caozhihu.com/tmall)    
-[模仿天猫后台](http://caozhihu.com/tmall/admin_category_list)    
+[模仿天猫前台](http://how2j.cn/tmall?p=55563)    
+
 
 ### 项目简介
 
